@@ -1,5 +1,8 @@
-export const clubs = [
-  { id: 'galatasaray', name: 'Galatasaray' },
-  { id: 'fenerbahce', name: 'Fenerbahçe' },
-  { id: 'besiktas', name: 'Beşiktaş' }
-];
+import{clubById,players,boards,playerById}from'./data.mjs';import{eligiblePlayers,validPlayer,winner,seededIndex}from'./engine.mjs';
+let g;const $=s=>document.querySelector(s);
+function draw(){const b=g.board;let x=`<div class="game-wrap"><div class="turn">${g.mode==='daily'?'Günün Gridi':g.turn==='human'?'Sıra sende':'AI oynuyor...'}</div><div class="board"><div class="corner"><span class="brand-mark">XI</span></div>${b.cols.map(id=>`<div class="club-head"><b>${clubById[id].name}</b></div>`).join('')}`;for(let r=0;r<3;r++){x+=`<div class="club-head"><b>${clubById[b.rows[r]].name}</b></div>`;for(let c=0;c<3;c++){const i=r*3+c,v=g.cells[i];x+=v?`<button class="cell filled ${v.owner}" data-i="${i}"><span>${playerById[v.playerId].name}</span></button>`:`<button class="cell" data-i="${i}"><i class="plus">+</i></button>`}}x+=`</div><div class="actions"><button class="secondary" id="gHome">Ana Sayfa</button></div></div>`;$('#app').innerHTML=x;$('#gHome').onclick=()=>window.EG.nav('home');$('#app').querySelectorAll('.cell:not(.filled)').forEach(b=>b.onclick=()=>pick(Number(b.dataset.i)))}
+function pick(i){if(g.turn!=='human')return;const name=prompt('Bu iki kulüpte de oynamış futbolcu adı:');if(!name)return;const p=players.find(x=>x.name.toLocaleLowerCase('tr-TR')===name.trim().toLocaleLowerCase('tr-TR')),r=g.board.rows[Math.floor(i/3)],c=g.board.cols[i%3];if(!validPlayer(p,r,c,g.used)){window.EG.toast('Yanlış futbolcu.');return}g.cells[i]={owner:'human',playerId:p.id};g.used.add(p.id);if(end())return;if(g.mode==='daily'){draw();return}g.turn='ai';draw();setTimeout(ai,450)}
+function ai(){const a=[];for(let i=0;i<9;i++){if(g.cells[i])continue;const r=g.board.rows[Math.floor(i/3)],c=g.board.cols[i%3],o=eligiblePlayers(players,r,c,g.used);if(o.length)a.push({i,o})}if(!a.length)return;const m=a[Math.floor(Math.random()*a.length)],p=m.o[0];g.cells[m.i]={owner:'ai',playerId:p.id};g.used.add(p.id);if(!end()){g.turn='human';draw()}}
+function end(){const w=winner(g.cells);if(!w)return false;g.turn='done';draw();window.EG.toast(w.owner==='human'?'Galibiyet!':'AI kazandı.');return true}
+function start(mode='quick'){const d=new Date().toISOString().slice(0,10),i=mode==='daily'?seededIndex(d,boards.length):Math.floor(Math.random()*boards.length);g={mode,board:boards[i],cells:Array(9).fill(null),used:new Set(),turn:'human'};draw()}
+window.startElevenGame=start;
