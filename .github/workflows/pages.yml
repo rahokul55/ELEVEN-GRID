@@ -23,8 +23,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: assets/media
-          key: ${{ runner.os }}-eleven-grid-media-v2-${{ hashFiles('js/clubs.mjs', 'js/players-*.mjs') }}
+          key: ${{ runner.os }}-eleven-grid-media-v3-${{ hashFiles('js/clubs.mjs', 'js/players-*.mjs') }}-${{ github.run_id }}
           restore-keys: |
+            ${{ runner.os }}-eleven-grid-media-v3-${{ hashFiles('js/clubs.mjs', 'js/players-*.mjs') }}-
             ${{ runner.os }}-eleven-grid-media-v2-
       - name: Build local club and player media library
         shell: bash
