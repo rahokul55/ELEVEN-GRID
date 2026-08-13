@@ -7,15 +7,15 @@ ELEVEN GRID is an original football-knowledge strategy game built around a 3×3 
 - No registration or login.
 - On the first visit, the player chooses a username once; the local profile is remembered in the browser.
 - Responsive desktop/mobile interface.
-- **15 real clubs** and a curated **40-player seed database** with real career relationships.
+- **15 real clubs** and a curated **42-player seed database** with real career relationships.
 - Club/player reference images are requested at runtime from Wikipedia page-image endpoints rather than redistributed in this repository.
 - 3×3 intersection validation engine with one-use-per-player rules.
 - **Quick Match:** a clearly labelled AI opponent, turn changes, valid/invalid answers, win/draw detection, rating, XP and match history.
-- **Daily Grid:** date-seeded solo grid.
+- **Daily Grid:** date-seeded solo grid that can always be completed with nine distinct players in every curated board.
 - Searchable player database and club gallery.
 - Local statistics, rating and level progression.
 - Installable web-app manifest and GitHub Pages deployment workflow.
-- Data/engine tests in `tests/game.test.mjs`.
+- Automated data/engine tests, including a distinct-answer completion test, in `tests/game.test.mjs`.
 
 ## Run locally
 
@@ -37,7 +37,7 @@ No third-party npm package is required by the current build.
 
 ## GitHub Pages
 
-The repository contains `.github/workflows/pages.yml`. Once GitHub Pages is configured to use **GitHub Actions** as the publishing source, every push to `main` can deploy the site.
+The repository contains `.github/workflows/pages.yml`. Once GitHub Pages is configured to use **GitHub Actions** as the publishing source, every push to `main` runs the test suite and can deploy the site.
 
 Expected project URL:
 
@@ -66,7 +66,7 @@ ELEVEN-GRID/
     └── pages.yml
 ```
 
-The two temporary module filenames above are retained only to keep the current branch stable during the initial deploy; they can be renamed cleanly in the next refactor.
+The two temporary module filenames above are retained only to keep the current release stable during the initial deploy; they can be renamed cleanly in the next refactor.
 
 ## Multiplayer roadmap
 
