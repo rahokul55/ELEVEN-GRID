@@ -35,7 +35,7 @@ jobs:
           import {dirname,extname} from 'node:path';
           import {createHash} from 'node:crypto';
           import {clubs,players} from './js/data.mjs';
-          const MEDIA=new URL('./assets/media/',import.meta.url),LIMIT=4,EXT={'image/jpeg':'.jpg','image/jpg':'.jpg','image/png':'.png','image/webp':'.webp','image/svg+xml':'.svg'};
+          const MEDIA=new URL('./assets/media/',import.meta.url),LIMIT=1,EXT={'image/jpeg':'.jpg','image/jpg':'.jpg','image/png':'.png','image/webp':'.webp','image/svg+xml':'.svg'};
           function initials(s=''){return s.trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>Array.from(x)[0]||'').join('').toLocaleUpperCase('tr-TR')||'XI'}
           function safe(s=''){return s.replace(/[<&>]/g,'')}
           function fallback(item,kind){const club=kind==='clubs',bg=club?(item.colors?.[1]||'#111c2c'):'#17253a',fg=club?(item.colors?.[0]||'#f3c85a'):'#dbe6f4',label=club?(item.short||initials(item.name)):initials(item.name);return `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320"><rect width="320" height="320" rx="${club?38:160}" fill="${bg}"/><rect x="8" y="8" width="304" height="304" rx="${club?30:152}" fill="none" stroke="${fg}" stroke-opacity=".3" stroke-width="5"/><text x="160" y="184" text-anchor="middle" fill="${fg}" font-family="Arial,Helvetica,sans-serif" font-size="82" font-weight="900">${safe(label)}</text></svg>`}
