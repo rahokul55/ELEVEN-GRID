@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07111f"><meta name="description" content="ELEVEN GRID - futbol bilgisi ve strateji oyunu">
+<title>ELEVEN GRID</title><link rel="stylesheet" href="./styles.css"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar"><button class="brand" data-nav="home" aria-label="Ana sayfa"><span class="brand-mark">XI</span><span>ELEVEN <b>GRID</b></span></button><nav class="desktop-nav"><button data-nav="home">Ana Sayfa</button><button data-nav="players">Futbolcular</button><button data-nav="clubs">Kulüpler</button><button data-nav="stats">İstatistik</button></nav><button id="profileButton" class="profile-pill"><span id="profileName">Oyuncu</span><small id="profileMeta">1000 P</small></button></header>
+<main id="app" class="main" aria-live="polite"></main>
+<nav class="bottom-nav"><button data-nav="home"><span>⌂</span>Ana Sayfa</button><button data-nav="players"><span>◎</span>Oyuncular</button><button data-nav="clubs"><span>◈</span>Kulüpler</button><button data-nav="stats"><span>▥</span>İstatistik</button></nav>
+</div>
+<div id="usernameModal" class="modal hidden"><form id="usernameForm" class="modal-card"><div class="brand-mark large">XI</div><h1>ELEVEN GRID</h1><p>Tek seferlik kullanıcı adını seç. Kayıt veya giriş gerekmez; bu tarayıcıda hatırlanır.</p><label>Kullanıcı adı<input id="usernameInput" maxlength="18" minlength="3" autocomplete="nickname" placeholder="Örn. gridmaster" required></label><button class="primary" type="submit">Oyuna Başla</button></form></div>
+<div id="pickerModal" class="modal hidden"><section class="picker-card"><div class="picker-head"><div><small id="pickerHint">Futbolcu seç</small><h2 id="pickerTitle">Kesişim</h2></div><button id="pickerClose" class="icon-btn" aria-label="Kapat">×</button></div><input id="playerSearch" class="search" placeholder="Futbolcu ara..." autocomplete="off"><div id="playerChoices" class="choice-list"></div></section></div>
+<div id="profileModal" class="modal hidden"><form id="profileForm" class="modal-card compact"><button type="button" id="profileClose" class="icon-btn close">×</button><h2>Profil</h2><label>Kullanıcı adı<input id="profileUsername" maxlength="18" minlength="3" required></label><button class="primary" type="submit">Kaydet</button><button id="resetProfile" class="danger ghost" type="button">Yerel profili sıfırla</button></form></div>
+<div id="toast" class="toast" role="status"></div>
+<script type="module" src="./js/app.mjs"></script>
+</body></html>
