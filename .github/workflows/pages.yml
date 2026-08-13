@@ -19,6 +19,40 @@ jobs:
         with:
           node-version: '24'
       - run: npm test
+      - name: Restore persistent media cache
+        uses: actions/cache@v4
+        with:
+          path: assets/media
+          key: ${{ runner.os }}-eleven-grid-media-v2-${{ hashFiles('js/clubs.mjs', 'js/players-*.mjs') }}
+          restore-keys: |
+            ${{ runner.os }}-eleven-grid-media-v2-
+      - name: Build local club and player media library
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import {mkdir,readFile,writeFile,access,readdir,unlink} from 'node:fs/promises';
+          import {dirname,extname} from 'node:path';
+          import {createHash} from 'node:crypto';
+          import {clubs,players} from './js/data.mjs';
+          const MEDIA=new URL('./assets/media/',import.meta.url),LIMIT=4,EXT={'image/jpeg':'.jpg','image/jpg':'.jpg','image/png':'.png','image/webp':'.webp','image/svg+xml':'.svg'};
+          function initials(s=''){return s.trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>Array.from(x)[0]||'').join('').toLocaleUpperCase('tr-TR')||'XI'}
+          function safe(s=''){return s.replace(/[<&>]/g,'')}
+          function fallback(item,kind){const club=kind==='clubs',bg=club?(item.colors?.[1]||'#111c2c'):'#17253a',fg=club?(item.colors?.[0]||'#f3c85a'):'#dbe6f4',label=club?(item.short||initials(item.name)):initials(item.name);return `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 320 320"><rect width="320" height="320" rx="${club?38:160}" fill="${bg}"/><rect x="8" y="8" width="304" height="304" rx="${club?30:152}" fill="none" stroke="${fg}" stroke-opacity=".3" stroke-width="5"/><text x="160" y="184" text-anchor="middle" fill="${fg}" font-family="Arial,Helvetica,sans-serif" font-size="82" font-weight="900">${safe(label)}</text></svg>`}
+          async function exists(u){try{await access(u);return true}catch{return false}}
+          function clean(url=''){try{const u=new URL(url);for(const k of ['utm_source','utm_campaign','utm_content'])u.searchParams.delete(k);return u.toString()}catch{return url}}
+          async function summary(title){const slug=encodeURIComponent(title.replaceAll(' ','_')),r=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${slug}`,{headers:{'User-Agent':'ELEVEN-GRID-media-sync/1.0'}});if(!r.ok)return null;const d=await r.json();return{image:clean(d.originalimage?.source||d.thumbnail?.source||''),page:d.content_urls?.desktop?.page||''}}
+          async function search(title){const q=new URLSearchParams({action:'query',generator:'search',gsrsearch:title,gsrlimit:'1',prop:'pageimages',piprop:'thumbnail',pithumbsize:'512',format:'json'}),r=await fetch(`https://en.wikipedia.org/w/api.php?${q}`,{headers:{'User-Agent':'ELEVEN-GRID-media-sync/1.0'}});if(!r.ok)return'';const d=await r.json();return clean(Object.values(d.query?.pages||{}).find(p=>p?.thumbnail?.source)?.thumbnail?.source||'')}
+          async function download(source,base){const r=await fetch(source,{headers:{'User-Agent':'ELEVEN-GRID-media-sync/1.0'}});if(!r.ok)throw new Error(`HTTP ${r.status}`);const type=(r.headers.get('content-type')||'').split(';')[0].trim().toLowerCase();if(!type.startsWith('image/'))throw new Error(`content-type ${type}`);const ext=EXT[type]||extname(new URL(source).pathname).toLowerCase()||'.img',out=new URL(`${base}${ext}`,MEDIA);await mkdir(new URL(dirname(`${base}${ext}`)+'/',MEDIA),{recursive:true});await writeFile(out,Buffer.from(await r.arrayBuffer()));return`./assets/media/${base}${ext}`}
+          async function cleanup(base,keep){const dirName=dirname(base),stem=base.split('/').pop(),dir=new URL(`${dirName}/`,MEDIA);try{for(const file of await readdir(dir)){if(!file.startsWith(`${stem}.`))continue;const rel=`./assets/media/${dirName}/${file}`;if(rel!==keep)await unlink(new URL(file,dir))}}catch{}}
+          async function one(item,kind,old){const base=`${kind}/${item.id}`;if(old?.status==='local'&&old.wikiTitle===item.wikiTitle&&old.src){const local=new URL(old.src.replace(/^\.\/assets\/media\//,''),MEDIA);if(await exists(local))return old}let info=null,source='';try{info=await summary(item.wikiTitle);source=info?.image||await search(item.wikiTitle);if(source){const src=await download(source,base);await cleanup(base,src);return{src,source,page:info?.page||'',name:item.name,wikiTitle:item.wikiTitle,status:'local'}}}catch(e){console.warn(`[media] ${kind}/${item.id}: ${e.message}`)}const src=`./assets/media/${base}.svg`,out=new URL(`${base}.svg`,MEDIA);await mkdir(new URL(`${kind}/`,MEDIA),{recursive:true});await writeFile(out,fallback(item,kind));await cleanup(base,src);return{src,source:'',page:info?.page||'',name:item.name,wikiTitle:item.wikiTitle,status:'fallback'}}
+          async function mapLimit(items,fn){const out=new Array(items.length);let next=0;await Promise.all(Array.from({length:Math.min(LIMIT,items.length)},async()=>{while(true){const i=next++;if(i>=items.length)return;out[i]=await fn(items[i],i)}}));return out}
+          await mkdir(MEDIA,{recursive:true});let old={clubs:{},players:{}};try{old=JSON.parse(await readFile(new URL('manifest.json',MEDIA),'utf8'))}catch{}
+          const ce=await mapLimit(clubs,c=>one(c,'clubs',old.clubs?.[c.id])),pe=await mapLimit(players,p=>one(p,'players',old.players?.[p.id])),clubMap=Object.fromEntries(clubs.map((c,i)=>[c.id,ce[i]])),playerMap=Object.fromEntries(players.map((p,i)=>[p.id,pe[i]])),version=createHash('sha1').update(JSON.stringify({clubs:clubMap,players:playerMap})).digest('hex').slice(0,12),all=[...ce,...pe],manifest={version,generatedAt:new Date().toISOString(),counts:{clubs:clubs.length,players:players.length,local:all.filter(x=>x.status==='local').length,fallback:all.filter(x=>x.status==='fallback').length},clubs:clubMap,players:playerMap};
+          await writeFile(new URL('manifest.json',MEDIA),JSON.stringify(manifest,null,2)+'\n');
+          const problems=[];for(const [kind,items] of [['clubs',clubs],['players',players]])for(const item of items){const e=manifest[kind]?.[item.id];if(!e?.src){problems.push(`${kind}/${item.id}: manifest missing`);continue}try{await access(new URL(e.src.replace(/^\.\/assets\/media\//,''),MEDIA))}catch{problems.push(`${kind}/${item.id}: file missing`)}}
+          if(problems.length){console.error(problems.join('\n'));process.exit(1)}
+          console.log(`[media] version=${version} clubs=${clubs.length} players=${players.length} real=${manifest.counts.local} fallback=${manifest.counts.fallback}`);
+          NODE
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
