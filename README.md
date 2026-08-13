@@ -1,26 +1,25 @@
 # ELEVEN GRID
 
-ELEVEN GRID is an original football-knowledge strategy game built around a 3×3 club intersection grid. The project is inspired by the *genre* of football grid/XOX games, but its code, visual system, progression, data model and UI are original.
+ELEVEN GRID is an original football-knowledge strategy game built around a 3×3 club-intersection grid. The gameplay category is inspired by football-grid/XOX games, while the code, visual system, progression and interface in this repository are original.
 
-## Current build
+## Playable v0.1
 
-- No registration/login flow.
-- First launch asks for a username once and stores the local profile in the browser.
-- Responsive desktop/mobile game UI.
-- Real club and footballer names in a curated football database.
-- Real player/club reference images are resolved at runtime from Wikipedia page-image endpoints; images are not redistributed in this repository.
-- 3×3 intersection engine with answer validation.
-- Quick Match vs clearly-labelled AI opponent.
-- Daily Grid solo challenge.
-- Local rating, XP, level, wins/draws/losses and match history.
-- Searchable footballer and club database.
-- PWA manifest + service worker for installable/offline shell.
-- Automated data/engine tests.
-- GitHub Pages deployment workflow.
+- No registration or login.
+- On the first visit, the player chooses a username once; the local profile is remembered in the browser.
+- Responsive desktop/mobile interface.
+- **15 real clubs** and a curated **40-player seed database** with real career relationships.
+- Club/player reference images are requested at runtime from Wikipedia page-image endpoints rather than redistributed in this repository.
+- 3×3 intersection validation engine with one-use-per-player rules.
+- **Quick Match:** a clearly labelled AI opponent, turn changes, valid/invalid answers, win/draw detection, rating, XP and match history.
+- **Daily Grid:** date-seeded solo grid.
+- Searchable player database and club gallery.
+- Local statistics, rating and level progression.
+- Installable web-app manifest and GitHub Pages deployment workflow.
+- Data/engine tests in `tests/game.test.mjs`.
 
 ## Run locally
 
-Because the app uses ES modules, serve the repository with any local HTTP server instead of opening `index.html` directly.
+The app uses ES modules, so serve the repository over HTTP instead of opening `index.html` directly.
 
 ```bash
 python -m http.server 8080
@@ -34,19 +33,15 @@ Then open `http://localhost:8080`.
 npm test
 ```
 
-No third-party npm dependency is required for the current build.
+No third-party npm package is required by the current build.
 
 ## GitHub Pages
 
-The repository contains `.github/workflows/pages.yml`. After GitHub Pages is configured to use **GitHub Actions** as its publishing source, every push to `main` deploys the site automatically.
+The repository contains `.github/workflows/pages.yml`. Once GitHub Pages is configured to use **GitHub Actions** as the publishing source, every push to `main` can deploy the site.
 
 Expected project URL:
 
 `https://rahokul55.github.io/ELEVEN-GRID/`
-
-## Data and media note
-
-Club/player relationships in `js/data.mjs` are curated football-history data used by the validation engine. Remote images are requested from Wikipedia/Wikimedia at runtime and are not committed to this repository. Rights in player photographs, club crests, names and trademarks remain with their respective owners/rightsholders. For a commercial store release, replace/reference media only under licences appropriate for that release.
 
 ## Architecture
 
@@ -55,14 +50,28 @@ ELEVEN-GRID/
 ├── index.html
 ├── styles.css
 ├── manifest.webmanifest
-├── sw.js
+├── assets/
+│   └── icon.svg
 ├── js/
-│   ├── data.mjs       # clubs, players, curated boards
-│   ├── engine.mjs     # pure validation/win/AI helpers
-│   └── app.mjs        # UI, profile, modes, persistence
+│   ├── clubs.mjs       # club catalogue
+│   ├── players-*.mjs   # footballer seed data
+│   ├── data.mjs        # combined data + curated boards
+│   ├── engine.mjs      # pure validation/win/seed helpers
+│   ├── test.js         # local profile/rating helpers (temporary filename)
+│   ├── sample-data.mjs # playable Quick Match + Daily Grid module (temporary filename)
+│   └── app.mjs         # shell, navigation, DB views, image hydration
 ├── tests/
 │   └── game.test.mjs
 └── .github/workflows/
-    ├── ci.yml
     └── pages.yml
 ```
+
+The two temporary module filenames above are retained only to keep the current branch stable during the initial deploy; they can be renamed cleanly in the next refactor.
+
+## Multiplayer roadmap
+
+GitHub Pages is a static host, so the current Quick Match mode is intentionally labelled as **AI** rather than pretending to be online. True realtime 1v1/2v2, matchmaking, global leaderboards and shared profiles require a backend/realtime service and will be added as a separate phase.
+
+## Data and media note
+
+The seed database is curated football-history data used by the validation engine. Player photographs, club crests, names and trademarks may be protected by separate rights. For a commercial store release, use media and data under licences/permissions appropriate for that release; do not assume that a runtime reference image is automatically cleared for commercial redistribution.
